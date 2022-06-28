@@ -3,41 +3,79 @@ class Game
     def initialize(human, computer)
         @human = human
         @computer = computer
+        @guesses = Array.new(12)
+        @guess_counter = 0
     end
 
-    def setup_board
+    def setup_board()
+        @guesses = @guesses.map do |guess|
+            guess = ". . . ."
+        end
+    end
+
+    def print_board()
         puts "    X X X X"
         puts "----------"
-        puts "1:  . . . ."
-        puts "2:  . . . ."
-        puts "3:  . . . ."
-        puts "4:  . . . ."
-        puts "5:  . . . ."
-        puts "6:  . . . ."
-        puts "7:  . . . ."
-        puts "8:  . . . ."
-        puts "9:  . . . ."
-        puts "10: . . . ."
-        puts "11: . . . ."
-        puts "12: . . . ."
+        @guesses.each_with_index do |guess, index|
+            if(index < 9)
+                puts " #{index + 1}: #{guess}"
+            else
+                puts "#{index + 1}: #{guess}"    
+            end
+        end
     end
 
-    def game_loop()
-        setup_board
+    def get_valid_guess()
         guess = 0
-
         while(!got_valid_guess(guess)) do
             puts "What is your guess? (Enter a 4 digit number between 1111 and 6666)"
             guess = gets.chomp.to_i
         end
-
-        puts "Got valid guess :)"
-        puts "Compare your guess with my answer"
-        guess = convert_to_array(guess)
-        if(guess == @computer.answer)
-            puts "YOU GOT IT RIGHT!"
+        return guess
+    end
+    
+    def calculate_feedback(guess)
+        feedback = [0, 0]
+        temp = Array.new(4)
+        
+        @computer.answer.each_with_index do |answer_num, index|
+            if(answer_num == guess[index])
+                feedback[0] += 1
+            else
+                temp[index] = answer_num
+            end
         end
-        p guess
+        guess.each_with_index do |digit, index|
+            if(digit && temp.include?(digit))
+                feedback[1] += 1
+                temp[temp.index(digit)] = nil
+            end
+        end
+        return feedback
+    end
+
+    def game_loop()
+        setup_board
+        finished = false
+
+        while(!finished && @guess_counter < 12) do
+            guess = get_valid_guess
+            guess = convert_to_array(guess)
+            
+            if(guess == @computer.answer)
+                puts "YOU GOT IT RIGHT!"
+                finished = true
+            else
+                feedback = calculate_feedback(guess)
+                puts "Correct digits and in the right place: #{feedback[0].to_s.green}"
+                puts "Correct digits but in the wrong place: #{feedback[1].to_s.yellow}"
+
+                @guesses[@guess_counter] = "#{guess[0]} #{guess[1]} #{guess[2]} #{guess[3]}   #{feedback[0].to_s.green} #{feedback[1].to_s.yellow}"
+                @guess_counter += 1
+
+                print_board
+            end
+        end
     end 
 
     def got_valid_guess(guess)
@@ -68,7 +106,7 @@ class Computer < Player
         arr = Array.new(4)
         prng = Random.new
         arr.map {|item| item = prng.rand(1..6)}
-        arr = [1, 2, 3, 4]
+        arr = [1, 1, 2, 3]
     end
 end
 
