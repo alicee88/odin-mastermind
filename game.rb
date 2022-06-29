@@ -28,8 +28,13 @@ class Game
     def get_valid_guess()
         guess = 0
         while(!got_valid_guess(guess)) do
-            puts "What is your guess? (Enter a 4 digit number between 1111 and 6666)"
-            guess = gets.chomp.to_i
+            puts "What is your guess? (Enter a 4 digit number between 1111 and 6666, or q to quit)"
+            guess = gets.chomp
+            if(guess == "q")
+                break
+            else
+                guess = guess.to_i
+            end
         end
         return guess
     end
@@ -60,10 +65,15 @@ class Game
 
         while(!finished && @guess_counter < 12) do
             guess = get_valid_guess
+
+            if(guess == "q")
+                break
+            end
+
             guess = convert_to_array(guess)
             
             if(guess == @computer.answer)
-                puts "YOU GOT IT RIGHT!"
+                puts "Well done, the answer was indeed #{@computer.answer}."
                 finished = true
             else
                 feedback = calculate_feedback(guess)
@@ -75,6 +85,9 @@ class Game
 
                 print_board
             end
+        end
+        if(@guess_counter >= 12 || guess == "q")
+            puts "The answer was #{@computer.answer}."
         end
     end 
 
@@ -99,14 +112,14 @@ class Computer < Player
 
     def initialize()
         @answer = create_answer()
-        p @answer
+        # p @answer
     end
 
     def create_answer()
         arr = Array.new(4)
         prng = Random.new
         arr.map {|item| item = prng.rand(1..6)}
-        arr = [1, 1, 2, 3]
+        # arr = [1, 1, 2, 3]
     end
 end
 
